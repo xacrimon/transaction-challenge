@@ -1,4 +1,4 @@
-const AMOUNT_SHIFT_ACCURACY: f32 = 1000.0;
+const AMOUNT_SHIFT_ACCURACY: f32 = 10000.0;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::ops;
 
@@ -73,8 +73,8 @@ impl Amount {
     where
         D: Deserializer<'de>,
     {
-        let amount: f32 = Deserialize::deserialize(deserializer)?;
-        Ok(Amount::from(amount))
+        let amount: Option<f32> = Deserialize::deserialize(deserializer)?;
+        Ok(Amount::from(amount.unwrap_or(0.0)))
     }
 
     pub fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
