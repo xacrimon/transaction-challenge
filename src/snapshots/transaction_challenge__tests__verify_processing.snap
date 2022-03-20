@@ -4,8 +4,8 @@ expression: readable
 ---
 client,available,held,total,locked
 client,available,held,total,locked
-3,0.0,5.0,5.0,false
-4,10.5562,0.0,10.5562,false
 1,2.0,0.0,2.0,false
 2,2.0,0.0,2.0,false
+3,0.0,5.0,5.0,false
+4,10.5562,0.0,10.5562,false
 

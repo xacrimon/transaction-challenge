@@ -35,7 +35,7 @@ pub enum TxType {
     Chargeback,
 }
 
-#[derive(Deserialize, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
+#[derive(Deserialize, Clone, Copy, PartialEq, Eq, Serialize, PartialOrd, Ord)]
 pub struct Client(u16);
 
 impl From<u16> for Client {
@@ -50,7 +50,7 @@ impl Into<u16> for Client {
     }
 }
 
-#[derive(Deserialize, Clone, Copy, Debug, Hash, PartialEq, Eq)]
+#[derive(Deserialize, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TxId(u32);
 
 impl From<u32> for TxId {

@@ -1,7 +1,7 @@
 use super::tx::{Amount, Client, Tx, TxId, TxType};
 use anyhow::{anyhow, Result};
 use serde::Serialize;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Clone, Copy, Serialize)]
 pub struct Account {
@@ -16,17 +16,17 @@ pub struct Account {
 }
 
 pub struct Engine {
-    accounts: HashMap<Client, Account>,
-    tx_amounts: HashMap<TxId, Amount>,
-    disputed: HashSet<TxId>,
+    accounts: BTreeMap<Client, Account>,
+    tx_amounts: BTreeMap<TxId, Amount>,
+    disputed: BTreeSet<TxId>,
 }
 
 impl Engine {
     pub fn new() -> Self {
         Engine {
-            accounts: HashMap::new(),
-            tx_amounts: HashMap::new(),
-            disputed: HashSet::new(),
+            accounts: BTreeMap::new(),
+            tx_amounts: BTreeMap::new(),
+            disputed: BTreeSet::new(),
         }
     }
 

@@ -10,3 +10,5 @@ deposit,3,6,5.0
 dispute,3,6,
 
 deposit,4,7,10.5562
+dispute,4,7,
+resolve,4,7,
