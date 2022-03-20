@@ -1,5 +1,6 @@
 const AMOUNT_SHIFT_ACCURACY: f32 = 1000.0;
 use serde::{Deserialize, Deserializer, Serialize};
+use std::ops;
 
 #[derive(Deserialize, Clone, Copy)]
 pub struct Tx {
@@ -12,7 +13,7 @@ pub struct Tx {
     #[serde(rename = "tx")]
     pub id: TxId,
 
-    #[serde(rename = "amount", deserialize_with = "Amount::deserialize")]
+    #[serde(rename = "amount", deserialize_with = "Amount::deserialize", default)]
     pub amount: Amount,
 }
 
@@ -49,7 +50,7 @@ impl Into<u16> for Client {
     }
 }
 
-#[derive(Deserialize, Clone, Copy)]
+#[derive(Deserialize, Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub struct TxId(u32);
 
 impl From<u32> for TxId {
@@ -64,7 +65,7 @@ impl Into<u32> for TxId {
     }
 }
 
-#[derive(Deserialize, Clone, Copy, Serialize)]
+#[derive(Deserialize, Clone, Copy, Serialize, PartialEq, Eq, PartialOrd, Default)]
 pub struct Amount(u32);
 
 impl Amount {
@@ -86,5 +87,21 @@ impl From<f32> for Amount {
 impl Into<f32> for Amount {
     fn into(self) -> f32 {
         self.0 as f32 / AMOUNT_SHIFT_ACCURACY
+    }
+}
+
+impl ops::Add for Amount {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        Amount(self.0 + other.0)
+    }
+}
+
+impl ops::Sub for Amount {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        Amount(self.0 - other.0)
     }
 }

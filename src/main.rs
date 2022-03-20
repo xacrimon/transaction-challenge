@@ -31,7 +31,9 @@ fn main() -> Result<()> {
     let mut engine = Engine::new();
 
     for tx in tx_stream {
-        engine.apply(tx?);
+        if let Err(err) = engine.apply(tx?) {
+            eprintln!("{}", err);
+        }
     }
 
     for account in engine.accounts() {
