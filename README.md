@@ -11,3 +11,5 @@ We also make some assumptions about the environment and data:
 - Failed transactions are simply ignored and further ones for an account are still recognized.
 
 CSV output is written to stdout and all errors encountered during processing are written to stderr.
+
+The `insta` crate is employed to perform unit testing on the sample data found in `sample.csv`.
