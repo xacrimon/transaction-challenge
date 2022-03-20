@@ -7,10 +7,10 @@ pub struct Tx {
     #[serde(rename = "type")]
     pub ty: TxType,
 
-    #[serde(rename = "client")]
+    #[serde(rename = "client", deserialize_with = "Client::deserialize")]
     pub client: Client,
 
-    #[serde(rename = "tx")]
+    #[serde(rename = "tx", deserialize_with = "TxId::deserialize")]
     pub id: TxId,
 
     #[serde(rename = "amount", deserialize_with = "Amount::deserialize", default)]
@@ -38,6 +38,16 @@ pub enum TxType {
 #[derive(Deserialize, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
 pub struct Client(u16);
 
+impl Client {
+    fn deserialize<'de, D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let id: u16 = Deserialize::deserialize(deserializer)?;
+        Ok(Client(id))
+    }
+}
+
 impl From<u16> for Client {
     fn from(id: u16) -> Self {
         Client(id)
@@ -52,6 +62,16 @@ impl Into<u16> for Client {
 
 #[derive(Deserialize, Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub struct TxId(u32);
+
+impl TxId {
+    fn deserialize<'de, D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let id: u32 = Deserialize::deserialize(deserializer)?;
+        Ok(TxId(id))
+    }
+}
 
 impl From<u32> for TxId {
     fn from(id: u32) -> Self {

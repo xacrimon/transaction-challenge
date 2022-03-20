@@ -28,7 +28,9 @@ impl Engine {
     }
 
     pub fn apply(&mut self, tx: Tx) -> Result<()> {
-        self.tx_amounts.insert(tx.id, tx.amount);
+        if matches!(tx.ty, TxType::Deposit | TxType::Withdrawal) {
+            self.tx_amounts.insert(tx.id, tx.amount);
+        }
 
         match tx.ty {
             TxType::Deposit => self.deposit(tx.client, tx.amount, tx.id),
@@ -83,8 +85,8 @@ impl Engine {
             .tx_amounts
             .get(&tx_id)
             .ok_or(anyhow!("tx not found, tx: {:?}", tx_id))?;
-        let account = self.account(client)?;
 
+        let account = self.account(client)?;
         if account.available < amount {
             account.locked = true;
             return Err(anyhow!(
@@ -95,16 +97,21 @@ impl Engine {
 
         account.available = account.available - amount;
         account.held = account.held + amount;
+        self.disputed.insert(tx_id);
         Ok(())
     }
 
     fn resolve(&mut self, client: Client, _amount: Amount, tx_id: TxId) -> Result<()> {
+        if !self.disputed.contains(&tx_id) {
+            return Ok(());
+        }
+
         let amount = *self
             .tx_amounts
             .get(&tx_id)
             .ok_or(anyhow!("tx not found, tx: {:?}", tx_id))?;
-        let account = self.account(client)?;
 
+        let account = self.account(client)?;
         if account.held < amount {
             return Err(anyhow!(
                 "insufficient held funds, this shouldn't happen, tx: {:?}",
@@ -114,16 +121,21 @@ impl Engine {
 
         account.available = account.available + amount;
         account.held = account.held - amount;
+        self.disputed.remove(&tx_id);
         Ok(())
     }
 
     fn chargeback(&mut self, client: Client, _amount: Amount, tx_id: TxId) -> Result<()> {
+        if !self.disputed.contains(&tx_id) {
+            return Ok(());
+        }
+
         let amount = *self
             .tx_amounts
             .get(&tx_id)
             .ok_or(anyhow!("tx not found, tx: {:?}", tx_id))?;
+            
         let account = self.account(client)?;
-
         if account.held < amount {
             return Err(anyhow!(
                 "insufficient held funds, this shouldn't happen, tx: {:?}",
@@ -134,6 +146,7 @@ impl Engine {
         account.held = account.held - amount;
         account.total = account.total - amount;
         account.locked = true;
+        self.disputed.remove(&tx_id);
         Ok(())
     }
 
@@ -141,5 +154,3 @@ impl Engine {
         self.accounts.values().copied()
     }
 }
-
-// ignore resolve, chargeback in some cases
