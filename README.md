@@ -9,3 +9,5 @@ Some tradeoffs were made here that wouldn't be suitable in a production system:
 We also make some assumptions about the environment and data:
 - We lock accounts indefinently on chargeback, all further transactions fail with an error and get discarded.
 - Failed transactions are simply ignored and further ones for an account are still recognized.
+
+CSV output is written to stdout and all errors encountered during processing are written to stderr.
