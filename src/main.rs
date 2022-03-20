@@ -1,15 +1,15 @@
-mod tx;
 mod engine;
+mod tx;
 
-use tx::Tx;
 use anyhow::Result;
 use clap::Parser;
-use std::path::PathBuf;
-use std::fs::File;
 use engine::Engine;
+use std::fs::File;
 use std::io::{self, Read};
+use std::path::PathBuf;
+use tx::Tx;
 
-pub fn stream_records_from_reader<'r>(
+fn stream_records_from_reader<'r>(
     reader: &'r mut dyn Read,
 ) -> impl Iterator<Item = Result<Tx>> + 'r {
     csv::Reader::from_reader(reader)
@@ -42,4 +42,34 @@ fn main() -> Result<()> {
 
     writer.flush()?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::stream_records_from_reader;
+    use super::Engine;
+    use std::fs::File;
+
+    fn verify_processing() {
+        let mut file = File::open("sample.csv").unwrap();
+        let tx_stream = stream_records_from_reader(&mut file);
+        let mut data = Vec::new();
+        let mut wtr = std::io::Cursor::new(&mut data);
+        let mut writer = csv::Writer::from_writer(&mut wtr);
+        let mut engine = Engine::new();
+
+        for tx in tx_stream {
+            engine.apply(tx.unwrap()).unwrap();
+        }
+
+        for account in engine.accounts() {
+            writer.serialize(account).unwrap();
+        }
+
+        writer.flush().unwrap();
+        drop(writer);
+        
+        let readable = String::from_utf8(data).unwrap();
+        insta::assert_snapshot!(readable);
+    }
 }

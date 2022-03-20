@@ -1,7 +1,7 @@
-use super::tx::{Amount, Tx, TxId, TxType, Client};
-use std::collections::{HashMap, HashSet};
-use serde::Serialize;
+use super::tx::{Amount, Client, Tx, TxId, TxType};
 use anyhow::{anyhow, Result};
+use serde::Serialize;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Serialize)]
 pub struct Account {
@@ -67,7 +67,10 @@ impl Engine {
         let account = self.account(client)?;
 
         if account.available < amount {
-            return Err(anyhow!("insufficient funds for withdrawal, tx: {:?}", tx_id));
+            return Err(anyhow!(
+                "insufficient funds for withdrawal, tx: {:?}",
+                tx_id
+            ));
         }
 
         account.available = account.available - amount;
@@ -76,12 +79,18 @@ impl Engine {
     }
 
     fn dispute(&mut self, client: Client, _amount: Amount, tx_id: TxId) -> Result<()> {
-        let amount = *self.tx_amounts.get(&tx_id).ok_or(anyhow!("tx not found, tx: {:?}", tx_id))?;
+        let amount = *self
+            .tx_amounts
+            .get(&tx_id)
+            .ok_or(anyhow!("tx not found, tx: {:?}", tx_id))?;
         let account = self.account(client)?;
 
         if account.available < amount {
             account.locked = true;
-            return Err(anyhow!("insufficient funds for dispute, locking account, tx: {:?}", tx_id));
+            return Err(anyhow!(
+                "insufficient funds for dispute, locking account, tx: {:?}",
+                tx_id
+            ));
         }
 
         account.available = account.available - amount;
@@ -90,11 +99,17 @@ impl Engine {
     }
 
     fn resolve(&mut self, client: Client, _amount: Amount, tx_id: TxId) -> Result<()> {
-        let amount = *self.tx_amounts.get(&tx_id).ok_or(anyhow!("tx not found, tx: {:?}", tx_id))?;
+        let amount = *self
+            .tx_amounts
+            .get(&tx_id)
+            .ok_or(anyhow!("tx not found, tx: {:?}", tx_id))?;
         let account = self.account(client)?;
 
         if account.held < amount {
-            return Err(anyhow!("insufficient held funds, this shouldn't happen, tx: {:?}", tx_id));
+            return Err(anyhow!(
+                "insufficient held funds, this shouldn't happen, tx: {:?}",
+                tx_id
+            ));
         }
 
         account.available = account.available + amount;
@@ -103,11 +118,17 @@ impl Engine {
     }
 
     fn chargeback(&mut self, client: Client, _amount: Amount, tx_id: TxId) -> Result<()> {
-        let amount = *self.tx_amounts.get(&tx_id).ok_or(anyhow!("tx not found, tx: {:?}", tx_id))?;
+        let amount = *self
+            .tx_amounts
+            .get(&tx_id)
+            .ok_or(anyhow!("tx not found, tx: {:?}", tx_id))?;
         let account = self.account(client)?;
 
         if account.held < amount {
-            return Err(anyhow!("insufficient held funds, this shouldn't happen, tx: {:?}", tx_id));
+            return Err(anyhow!(
+                "insufficient held funds, this shouldn't happen, tx: {:?}",
+                tx_id
+            ));
         }
 
         account.held = account.held - amount;

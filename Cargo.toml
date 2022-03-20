@@ -8,3 +8,4 @@ csv = "1.1.6"
 anyhow = "1.0.56"
 serde = { version = "1.0.136", features = ["derive"] }
 clap = { version = "3.1.6", features = ["derive"] }
+insta = "1.13.0"
