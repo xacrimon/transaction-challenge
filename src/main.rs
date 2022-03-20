@@ -77,7 +77,7 @@ mod tests {
         let mut engine = Engine::new();
 
         for tx in tx_stream {
-            engine.apply(tx.unwrap()).unwrap();
+            let _ = engine.apply(tx.unwrap());
         }
 
         write_cols(&mut writer).unwrap();

@@ -6,8 +6,11 @@ use std::collections::{HashMap, HashSet};
 #[derive(Clone, Copy, Serialize)]
 pub struct Account {
     client: Client,
+    #[serde(serialize_with = "Amount::serialize")]
     available: Amount,
+    #[serde(serialize_with = "Amount::serialize")]
     held: Amount,
+    #[serde(serialize_with = "Amount::serialize")]
     total: Amount,
     locked: bool,
 }

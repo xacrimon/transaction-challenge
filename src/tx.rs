@@ -1,5 +1,5 @@
 const AMOUNT_SHIFT_ACCURACY: f32 = 1000.0;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::ops;
 
 #[derive(Deserialize, Clone, Copy)]
@@ -7,10 +7,10 @@ pub struct Tx {
     #[serde(rename = "type")]
     pub ty: TxType,
 
-    #[serde(rename = "client", deserialize_with = "Client::deserialize")]
+    #[serde(rename = "client")]
     pub client: Client,
 
-    #[serde(rename = "tx", deserialize_with = "TxId::deserialize")]
+    #[serde(rename = "tx")]
     pub id: TxId,
 
     #[serde(rename = "amount", deserialize_with = "Amount::deserialize", default)]
@@ -38,16 +38,6 @@ pub enum TxType {
 #[derive(Deserialize, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
 pub struct Client(u16);
 
-impl Client {
-    fn deserialize<'de, D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let id: u16 = Deserialize::deserialize(deserializer)?;
-        Ok(Client(id))
-    }
-}
-
 impl From<u16> for Client {
     fn from(id: u16) -> Self {
         Client(id)
@@ -63,16 +53,6 @@ impl Into<u16> for Client {
 #[derive(Deserialize, Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub struct TxId(u32);
 
-impl TxId {
-    fn deserialize<'de, D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let id: u32 = Deserialize::deserialize(deserializer)?;
-        Ok(TxId(id))
-    }
-}
-
 impl From<u32> for TxId {
     fn from(id: u32) -> Self {
         TxId(id)
@@ -85,8 +65,8 @@ impl Into<u32> for TxId {
     }
 }
 
-#[derive(Deserialize, Clone, Copy, Serialize, PartialEq, Eq, PartialOrd, Default)]
-pub struct Amount(u32);
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Default)]
+pub struct Amount(i32);
 
 impl Amount {
     fn deserialize<'de, D>(deserializer: D) -> Result<Self, D::Error>
@@ -96,11 +76,18 @@ impl Amount {
         let amount: f32 = Deserialize::deserialize(deserializer)?;
         Ok(Amount::from(amount))
     }
+
+    pub fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_f32(self.clone().into())
+    }
 }
 
 impl From<f32> for Amount {
     fn from(amount: f32) -> Self {
-        Amount((amount * AMOUNT_SHIFT_ACCURACY) as u32)
+        Amount((amount * AMOUNT_SHIFT_ACCURACY) as i32)
     }
 }
 
