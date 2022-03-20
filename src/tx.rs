@@ -1,17 +1,22 @@
 const AMOUNT_SHIFT_ACCURACY: f32 = 1000.0;
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone, Copy)]
 pub struct Tx {
+    #[serde(rename = "type")]
     pub ty: TxType,
+
+    #[serde(rename = "client")]
     pub client: Client,
+
+    #[serde(rename = "tx")]
     pub id: TxId,
 
-    #[serde(deserialize_with = "Amount::deserialize")]
+    #[serde(rename = "amount", deserialize_with = "Amount::deserialize")]
     pub amount: Amount,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone, Copy)]
 pub enum TxType {
     #[serde(rename = "deposit")]
     Deposit,
@@ -29,7 +34,7 @@ pub enum TxType {
     Chargeback,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
 pub struct Client(u16);
 
 impl From<u16> for Client {
@@ -44,7 +49,7 @@ impl Into<u16> for Client {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone, Copy)]
 pub struct TxId(u32);
 
 impl From<u32> for TxId {
@@ -59,7 +64,7 @@ impl Into<u32> for TxId {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone, Copy, Serialize)]
 pub struct Amount(u32);
 
 impl Amount {
